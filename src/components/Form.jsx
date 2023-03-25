@@ -1,25 +1,39 @@
-import { useState } from "react";
+import { useState,useContext } from "react";
 import Papa from "papaparse";
 import Data  from '../utils/data';
+import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
+import { BarChart } from "./BarChart";
+import { useRef } from "react";
+import AuthContext from "../store/auth-context";
+import { Fragment } from "react";
+import { redirect } from "react-router-dom";
 
 Chart.register(CategoryScale);
 
 const allowedExtensions = ["csv"];
 
-function Form() {
-  // This state will store the parsed data
+function Form({setview}) {
+const authCtx = useContext(AuthContext);
+   
+  const titleref=useRef()
+  const subtitleref=useRef()
+  const cdateref=useRef()
+  const dnameref=useRef()
+  const lrdateref=useRef()
+  const overviewref=useRef()
+  // //input refs
+   
+
+  const xaxis=useRef()
+  const yaxis=useRef()
+
+  const [chartData, setChartData] = useState(null)
   const [data, setData] = useState([]);
-
-  // It state will contain the error when
-  // correct file extension is not used
+  const [filedata, setFileData] = useState([]);
   const [error, setError] = useState("");
-
-  // It will store the file uploaded by the user
   const [file, setFile] = useState("");
-
-  // This function will be called when
-  // the file input changes
+  const[Graph1,setGraph1]=useState("")
   const handleFileChange = (e) => {
     setError("");
 
@@ -49,22 +63,64 @@ function Form() {
       return;
     }
 
-    // Initialize a reader which allows user
-    // to read any file or blob.
+
     const reader = new FileReader();
 
-    // Event listener on reader when the file
-    // loads, we parse it and set the data.
+ 
     reader.onload = async ({ target }) => {
       const csv = Papa.parse(target.result, { header: true });
       const parsedData = csv?.data;
       const columns = Object.keys(parsedData[0]);
       setData(columns);
+      setFileData(parsedData)
     };
     reader.readAsText(file);
   };
+
+  const generateGraph=()=>{
+
+
+    const x=xaxis.current.value
+    const y=yaxis.current.value
+    console.log()
+    setChartData({
+        labels: filedata.map((data)=> data[`${x}`]), 
+        datasets: [
+          {
+            label: `${y}`,
+            data: filedata.map((data)=> data[`${y}`]),
+            backgroundColor: [
+              "rgba(75,192,192,1)",
+              "&quot;#ecf0f1",
+              "#50AF95",
+              "#f3ba2f",
+              "#2a71d0"
+            ],
+            borderColor: "black",
+            borderWidth: 2,
+            barPercentage:1,
+            CategoryPercentage:1,
+          }
+        ]
+      })
+  }
+  
+  const generateDoc=()=>{
+    const pdfdata={
+        title:titleref.current.value,
+        subtitle:subtitleref.current.value,
+        dname:dnameref.current.value,
+        cdate:cdateref.current.value,
+        lrdate:lrdateref.current.value,
+        overview:overviewref.current.value,
+        graph1:Graph1
+    }
+      setview(pdfdata)
+  }
+
   return (
-    <form class="w-full h-full max-w-lg ">
+    <Fragment>
+         <div class="w-full h-full max-w-lg ">
       <div class="flex flex-wrap -mx-3 mb-6">
         <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
           <label
@@ -77,7 +133,8 @@ function Form() {
             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
             id="grid-first-name"
             type="text"
-            placeholder="Jane"
+            placeholder="Title"
+            ref={titleref}
           />
           {/* <p class="text-red-500 text-xs italic">Please fill out this field.</p> */}
         </div>
@@ -93,6 +150,7 @@ function Form() {
             id="grid-last-name"
             type="text"
             placeholder="Doe"
+            ref={subtitleref}
           />
         </div>
         <div class="w-full md:w-1/2 px-3">
@@ -107,6 +165,7 @@ function Form() {
             id="grid-last-name"
             type="date"
             placeholder="Doe"
+            ref={cdateref}
           />
         </div>
         <div class="w-full md:w-1/2 px-3">
@@ -121,6 +180,7 @@ function Form() {
             id="grid-last-name"
             type="text"
             placeholder="Doe"
+            ref={dnameref}
           />
         </div>
         <div class="w-full md:w-1/2 px-3">
@@ -135,6 +195,7 @@ function Form() {
             id="grid-last-name"
             type="date"
             placeholder="Doe"
+            ref={lrdateref}
           />
         </div>
       </div>
@@ -150,7 +211,8 @@ function Form() {
             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             id="grid-password"
             type="password"
-            placeholder="******************"
+            placeholder="Please write the overview of the model"
+            ref={overviewref}
           />
         </div>
       </div>
@@ -184,7 +246,7 @@ function Form() {
         X axis
       </label>
       <div class="relative">
-        <select class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
+        <select ref={xaxis} class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
         {data.map((col, idx) => <option key={idx}>{col}</option>)}
         </select>
         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -193,11 +255,11 @@ function Form() {
       </div>
     </div>
     <div class="w-full  px-3 mb-6 md:mb-0">
-      <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-state">
+      <label  class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-state">
         Y axis
       </label>
       <div class="relative">
-        <select class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
+        <select ref={yaxis} class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
         {data.map((col, idx) => <option key={idx}>{col}</option>)}
         </select>
         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -205,12 +267,20 @@ function Form() {
         </div>
       </div>
     </div>
-
-    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="button">Generate Graph</button>
+    <br/>
+    {filedata.length!==0 && <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="button" onClick={generateGraph}>Generate Graph</button>}
        
+
       </div>}
-     
-    </form>
+      {chartData!=null && <BarChart chartData={chartData} setgraph={setGraph1}/>}
+    </div>
+    <br/>
+    <br/>
+    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="button" onClick={generateDoc}>Generate Document</button>
+
+    </Fragment>
+    
+   
   );
 }
 

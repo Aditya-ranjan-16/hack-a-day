@@ -7,11 +7,7 @@ const AuthContext = React.createContext({
   isLoggedIn: false,
   user: {
     name: "",
-    pic: "",
     email: "",
-    roll:0,
-    branch:"",
-    year:""
   },
   target:null,
   login: async (token) => {},
@@ -67,14 +63,15 @@ export const AuthContextProvider = (props) => {
 
   const [token, setToken] = useState(initialToken);
   const [user, setUser] = useState(initialuser);
-  const [target, setTarget] = useState("");
+  const [target, setTarget] = useState({});
   const [userIsLoggedIn, setUserIsLoggedIn] = useState(logedin);
 
   console.log("userislogedin : -" + userIsLoggedIn);
   
-  const targetHandler=(t)=>{
-    setTarget(t)
-  }
+  const targetHandler=useCallback((t)=>{
+    console.log(t)
+    setTarget({j:"kssk"})
+  })
   const logoutHandler = useCallback(() => {
     setToken(null);
     setUserIsLoggedIn(false);
@@ -122,7 +119,7 @@ export const AuthContextProvider = (props) => {
       logout: logoutHandler,
       settarget:targetHandler
     }),
-    [token, userIsLoggedIn,target]
+    [token, userIsLoggedIn]
   );
 
   return (

@@ -10,7 +10,7 @@ import axios from "axios";
 
 const Home = React.lazy(() => import("./pages/Home"));
 const ViewPdf = React.lazy(() => import("./pages/ViewPdf"));
-const CsvParse = React.lazy(() => import("./components/CsvParser"));
+
 function App() {
 
 
@@ -34,14 +34,7 @@ function App() {
               </Suspense>
             }
           />
-            <Route
-            path="/csv"
-            element={
-              <Suspense fallback={<div>Loading</div>}>
-                <CsvParse />
-              </Suspense>
-            }
-          />
+     
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         
